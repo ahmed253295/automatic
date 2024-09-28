@@ -1,5 +1,5 @@
 # Docker
-# Build a Docker image
+# Build and push a Docker image
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
 trigger:
@@ -13,17 +13,30 @@ variables:
 
 stages:
 - stage: Build
-  displayName: Build image
+  displayName: Build and Push Docker image
   jobs:
   - job: Build
-    displayName: Build
+    displayName: Build and Push
     pool:
-      vmImage: ubuntu-latest
+      vmImage: 'ubuntu-latest'
     steps:
+    # Step 1: Build the Docker image
     - task: Docker@2
-      displayName: Build an image
+      displayName: Build Docker image
       inputs:
+        containerRegistry: 'my-connection'  # Replace with your container registry connection name
+        repository: 'my-repo'               # Replace with your Docker repository name
         command: build
-        dockerfile: '$(Build.SourcesDirectory)/Dockerfile.unknown'
+        dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+        tags: |
+          $(tag)
+
+    # Step 2: Push the Docker image to the registry
+    - task: Docker@2
+      displayName: Push Docker image
+      inputs:
+        containerRegistry: 'my-connection'  # Replace with your container registry connection name
+        repository: 'my-repo'               # Replace with your Docker repository name
+        command: push
         tags: |
           $(tag)
